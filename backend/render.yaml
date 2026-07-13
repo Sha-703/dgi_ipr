@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: dgi-platform-backend
+    env: python
+    buildCommand: >
+      pip install -r dgi_platform/backend/requirements.txt
+      && cd dgi_platform/backend/dgi_project
+      && python manage.py collectstatic --noinput
+    startCommand: >
+      cd dgi_platform/backend/dgi_project
+      && gunicorn dgi_project.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: dgi_project.settings
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SECRET_KEY
+        fromSecret: dji-secret-key
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: dgi-platform-backend.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://dgi-platform-frontend.vercel.app
+    autoDeploy: true
+  - type: postgres
+    name: dgi-platform-db
+    plan: free
+    ipAllowList: []
